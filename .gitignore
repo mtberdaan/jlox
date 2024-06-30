@@ -1,2 +1,13 @@
 .DS_Store
 .vscode/
+
+
+# java
+*.class
+*.jar
+*.war
+*.ear
+*.iml
+.idea/
+out/
+target/

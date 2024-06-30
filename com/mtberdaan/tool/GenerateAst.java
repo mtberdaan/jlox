@@ -6,66 +6,61 @@ import java.util.Arrays;
 import java.util.List;
 
 public class GenerateAst {
-    public static void main(String[] args) throws IOException {
-        if (args.length != 1) {
-            System.err.println("Usage: generate_ast <output directory>");
-            System.exit(64);
-        }
-        String outputDir = args[0];
-        defineAst(outputDir, "Expr", Arrays.asList(
-            "Binary : Expr left, Token operator, Expr right",
-            "Grouping : Expr expression",
-            "Literal : Object value",
-            "Unary : Token operator, Expr right"
-        ));
+  public static void main(String[] args) throws IOException {
+    if (args.length != 1) {
+      System.err.println("Usage: generate_ast <output directory>");
+      System.exit(64);
+    }
+    String outputDir = args[0];
+    defineAst(outputDir, "Expr", Arrays.asList(
+      "Binary : Expr left, Token operator, Expr right",
+        "Grouping : Expr expression", 
+        "Literal : Object value", 
+        "Unary : Token operator, Expr right"));
+  }
+
+  private static void defineAst(String outputDir, String baseName, List<String> types) throws IOException {
+    String path = outputDir + "/" + baseName + ".java";
+    PrintWriter writer = new PrintWriter(path, "UTF-8");
+
+    writer.println("package com.mtberdaan.lox;");
+    writer.println();
+    writer.println("import java.util.List;");
+    writer.println();
+    writer.println("abstract class " + baseName + " {");
+
+    // The AST classes
+    for (String type : types) {
+      String className = type.split(":")[0].trim();
+      String fields = type.split(":")[1].trim();
+      defineType(writer, baseName, className, fields);
     }
 
-    private static void defineAst(
-        String outputDir, String baseName, List<String> types)
-        throws IOException {
-            String path = outputDir + "/" + baseName + ".java";
-            PrintWriter writer = new PrintWriter(path, "UTF-8");
+    writer.println("}");
+    writer.close();
+  }
 
-            writer.println("package com.mtberdaan.lox;");
-            writer.println();
-            writer.println("import java.util.List;");
-            writer.println();
-            writer.println("abstract class " + baseName + " {");
+  private static void defineType(PrintWriter writer, String baseName, String className, String fieldList) {
+    writer.println("  static class " + className + " extends " + baseName + " {");
 
-            // The AST classes
-            for (String type : types) {
-                String className = type.split(":")[0].trim();
-                String fields = type.split(":")[1].trim();
-                defineType(writer, baseName, className, fields);
-            }
+    // Constructor
+    writer.println("    " + className + "(" + fieldList + ") {");
 
-            writer.println("}");
-            writer.close();
-        }
+    // Store parameters in fields
+    String[] fields = fieldList.split(", ");
+    for (String field : fields) {
+      String name = field.split(" ")[1];
+      writer.println("      this." + name + " = " + name + ";");
+    }
 
-    private static void defineType(
-        PrintWriter writer, String baseName, String className, String fieldList) {
-            writer.println("  static class " + className + " extends " + baseName + " {");
-            
-            // Constructor
-            writer.println("    " + className + "(" + fieldList + ") {");
+    writer.println("    }");
 
-            // Store parameters in fields
-            String[] fields = fieldList.split(", ");
-            for (String field : fields) {
-                String name = field.split(" ")[1];
-                writer.println("      this." + name + " = " + name + ";");
-            }
+    // Fields
+    writer.println();
+    for (String field : fields) {
+      writer.println("    final " + field + ";");
+    }
 
-            writer.println("    }");
-
-            // Fields
-            writer.println();
-            for (String field : fields) {
-                writer.println("    final " + field + ";");
-            }
-
-            writer.println("  }");
-        }
+    writer.println("  }");
+  }
 }
-
